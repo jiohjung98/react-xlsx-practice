@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import TableComponent from './DataTable';
 import { DataItem } from '../types/DataItem';
+import ReactPaginate from 'react-paginate';
+import './Pagination.css'; 
 
 function ExcelDownloadButton() {
-    const data: DataItem[] = [
+    const totalData: DataItem[] = [
         { 쿠폰적용일: "2023.10.21", 쿠폰번호: 30, 관리쿠폰명: "가을 선착순 쿠폰", 사용건수: '100회', 쿠폰할인금액: '1000원', 쿠폰취소금액:'0원', 지원금액: '500원', 정산금액: '1000원', 정산완료일:'2023.11.20'},
         { 쿠폰적용일: "2023.10.20", 쿠폰번호: 30, 관리쿠폰명: "가을 선착순 쿠폰", 사용건수: '99회', 쿠폰할인금액: '1000원', 쿠폰취소금액:'0원', 지원금액: '500원', 정산금액: '1000원', 정산완료일:'2023.11.20'},
         { 쿠폰적용일: "2023.10.19", 쿠폰번호: 30, 관리쿠폰명: "가을 선착순 쿠폰", 사용건수: '98회', 쿠폰할인금액: '1000원', 쿠폰취소금액:'0원', 지원금액: '500원', 정산금액: '1000원', 정산완료일:'2023.11.20'},
@@ -28,22 +30,41 @@ function ExcelDownloadButton() {
         { 쿠폰적용일: "2023.10.01", 쿠폰번호: 30, 관리쿠폰명: "가을 선착순 쿠폰", 사용건수: '80회', 쿠폰할인금액: '1000원', 쿠폰취소금액:'0원', 지원금액: '500원', 정산금액: '1000원', 정산완료일:'2023.11.20'},
     ];
 
+    const itemsPerPage = 8;
+    const [currentPage, setCurrentPage] = useState(0); 
+
+    const offset = currentPage * itemsPerPage;
+    const currentData = totalData.slice(offset, offset + itemsPerPage);
+
     const handleDownload = () => {
-        /* 배열을 워크시트로 만들기 */
-        const worksheet = XLSX.utils.json_to_sheet(data);
-
-        /* 워크북 만들기 */
+        const worksheet = XLSX.utils.json_to_sheet(currentData);
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+        XLSX.writeFile(workbook, '다운로드.xlsx');
+    };
 
-        /* 파일로 저장 */
-        XLSX.writeFile(workbook, "다운로드.xlsx");
+    const handlePageClick = (selectedPage: { selected: number }) => {
+        setCurrentPage(selectedPage.selected);
     };
 
     return (
         <div>
-          <TableComponent data={data} />
+          <TableComponent data={currentData} />
           <button onClick={handleDownload}>엑셀 다운로드</button>
+      
+          <ReactPaginate 
+            className="pagination" 
+            previousLabel={'<'}
+            nextLabel={'>'}
+            breakLabel={'...'}
+            breakClassName={'hidden'}
+            pageCount={Math.ceil(totalData.length / itemsPerPage)}
+            marginPagesDisplayed={2}
+            pageRangeDisplayed={5}
+            onPageChange={handlePageClick}
+            containerClassName={'pagination'}
+            activeClassName={'active'}
+          />
         </div>
       );
 }
