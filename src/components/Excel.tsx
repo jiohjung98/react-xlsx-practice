@@ -43,6 +43,13 @@ function ExcelDownloadButton() {
         XLSX.writeFile(workbook, '다운로드.xlsx');
     };
 
+    const handleDownloadAll = () => {
+        const worksheet = XLSX.utils.json_to_sheet(totalData); 
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+        XLSX.writeFile(workbook, '전체_다운로드.xlsx');
+    };
+
     const handlePageClick = (selectedPage: { selected: number }) => {
         setCurrentPage(selectedPage.selected);
     };
@@ -50,7 +57,8 @@ function ExcelDownloadButton() {
     return (
         <div>
           <TableComponent data={currentData} />
-          <button onClick={handleDownload}>엑셀 다운로드</button>
+          <button onClick={handleDownload}>현재 페이지 엑셀 다운로드</button>
+          <button onClick={handleDownloadAll}>전체 데이터 엑셀 다운로드</button>
       
           <ReactPaginate 
             className="pagination" 
