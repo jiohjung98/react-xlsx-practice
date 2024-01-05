@@ -1,10 +1,5 @@
 import React from 'react';
-
-interface DataItem {
-  name: string;
-  age: number;
-  email: string;
-}
+import { DataItem} from '../types/DataItem';
 
 const TableComponent = ({ data }: { data: DataItem[] }) => {
   return (
