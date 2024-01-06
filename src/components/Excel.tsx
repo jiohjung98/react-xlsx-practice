@@ -4,6 +4,7 @@ import TableComponent from './DataTable';
 import { DataItem } from '../types/DataItem';
 import ReactPaginate from 'react-paginate';
 import './Pagination.css'; 
+import './DropdownSpinner.css';
 
 function ExcelDownloadButton() {
     const totalData: DataItem[] = [
@@ -35,8 +36,15 @@ function ExcelDownloadButton() {
 
     const [sortBy, setSortBy] = useState('쿠폰적용일');
 
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+
+    const toggleDropdown = () => {
+        setDropdownOpen(!dropdownOpen);
+    };
+
     const handleSortBy = (criteria: string) => {
         setSortBy(criteria);
+        setDropdownOpen(false);
     };
 
     const sortedData = [...totalData].sort((a, b) => {
@@ -51,8 +59,6 @@ function ExcelDownloadButton() {
         }
         return 0;
     });
-
-
 
     const offset = currentPage * itemsPerPage;
     const currentData = sortedData.slice(offset, offset + itemsPerPage);
@@ -80,11 +86,18 @@ function ExcelDownloadButton() {
           <TableComponent data={currentData} />
           <button onClick={handleDownload}>현재 페이지 엑셀 다운로드</button>
           <button onClick={handleDownloadAll}>전체 데이터 엑셀 다운로드</button>
-          <button onClick={() => handleSortBy('쿠폰적용일 순')}>쿠폰적용일 순</button>
-          <button onClick={() => handleSortBy('정산금액 순')}>정산금액 순</button>
-          <button onClick={() => handleSortBy('정산완료일 순')}>정산완료일 순</button>
-          <button onClick={() => handleSortBy('사용건수 순')}>사용건수 순</button>
-      
+           <div className={`dropdown ${dropdownOpen ? 'open' : ''}`}>
+                <button onClick={toggleDropdown} className="dropbtn">
+                    정렬 옵션 선택
+                </button>
+                <div className="dropdown-content">
+                    <button onClick={() => handleSortBy('쿠폰적용일 순')}>쿠폰적용일 순</button>
+                    <button onClick={() => handleSortBy('정산금액 순')}>정산금액 순</button>
+                    <button onClick={() => handleSortBy('정산완료일 순')}>정산완료일 순</button>
+                    <button onClick={() => handleSortBy('사용건수 순')}>사용건수 순</button>
+                </div>
+            </div>
+
           <ReactPaginate 
             className="pagination" 
             previousLabel={'<'}
