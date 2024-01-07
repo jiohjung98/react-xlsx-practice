@@ -3,6 +3,7 @@ import * as XLSX from 'xlsx';
 import TableComponent from './DataTable';
 import { DataItem } from '../types/DataItem';
 import ReactPaginate from 'react-paginate';
+import DateRangePicker from './DataRangePicker';
 import './Pagination.css'; 
 import './DropdownSpinner.css';
 
@@ -86,6 +87,7 @@ function ExcelDownloadButton() {
           <TableComponent data={currentData} />
           <button onClick={handleDownload}>현재 페이지 엑셀 다운로드</button>
           <button onClick={handleDownloadAll}>전체 데이터 엑셀 다운로드</button>
+          <DateRangePicker></DateRangePicker>
            <div className={`dropdown ${dropdownOpen ? 'open' : ''}`}>
                 <button onClick={toggleDropdown} className="dropbtn">
                     정렬 옵션 선택
