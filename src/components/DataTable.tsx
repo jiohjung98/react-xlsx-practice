@@ -2,6 +2,10 @@ import React from 'react';
 import { DataItem} from '../types/DataItem';
 
 const TableComponent = ({ data }: { data: DataItem[] }) => {
+  if (!data || data.length === 0) {
+    return <p>No data available</p>; 
+  }
+
   return (
     <table>
       <thead>

@@ -64,6 +64,8 @@ function ExcelDownloadButton() {
     const offset = currentPage * itemsPerPage;
     const currentData = sortedData.slice(offset, offset + itemsPerPage);
 
+    const [selectedData, setSelectedData] = useState<DataItem[]>([]);
+
     const handleDownload = () => {
         const worksheet = XLSX.utils.json_to_sheet(currentData);
         const workbook = XLSX.utils.book_new();
@@ -84,10 +86,10 @@ function ExcelDownloadButton() {
 
     return (
         <div>
-          <TableComponent data={currentData} />
+          <TableComponent data={selectedData} />
           <button onClick={handleDownload}>현재 페이지 엑셀 다운로드</button>
           <button onClick={handleDownloadAll}>전체 데이터 엑셀 다운로드</button>
-          <DateRangePicker></DateRangePicker>
+          <DateRangePicker selectedData={totalData} setSelectedData={setSelectedData} /> 
            <div className={`dropdown ${dropdownOpen ? 'open' : ''}`}>
                 <button onClick={toggleDropdown} className="dropbtn">
                     정렬 옵션 선택
