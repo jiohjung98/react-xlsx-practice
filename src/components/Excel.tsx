@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import TableComponent from './DataTable';
 import { DataItem } from '../types/DataItem';
@@ -9,8 +9,8 @@ import './DropdownSpinner.css';
 
 function ExcelDownloadButton() {
     const totalData: DataItem[] = [
-        { 쿠폰적용일: "2023.10.21", 쿠폰번호: 30, 관리쿠폰명: "가을 선착순 쿠폰", 사용건수: '100회', 쿠폰할인금액: '10원', 쿠폰취소금액:'0원', 지원금액: '500원', 정산금액: '1000원', 정산완료일:'2023.11.01'},
-        { 쿠폰적용일: "2023.10.20", 쿠폰번호: 29, 관리쿠폰명: "가을 선착순 쿠폰", 사용건수: '99회', 쿠폰할인금액: '50원', 쿠폰취소금액:'0원', 지원금액: '500원', 정산금액: '999원', 정산완료일:'2023.11.02'},
+        { 쿠폰적용일: "2023.11.21", 쿠폰번호: 30, 관리쿠폰명: "가을 선착순 쿠폰", 사용건수: '100회', 쿠폰할인금액: '10원', 쿠폰취소금액:'0원', 지원금액: '500원', 정산금액: '1000원', 정산완료일:'2023.11.01'},
+        { 쿠폰적용일: "2023.11.20", 쿠폰번호: 29, 관리쿠폰명: "가을 선착순 쿠폰", 사용건수: '99회', 쿠폰할인금액: '50원', 쿠폰취소금액:'0원', 지원금액: '500원', 정산금액: '999원', 정산완료일:'2023.11.02'},
         { 쿠폰적용일: "2023.10.19", 쿠폰번호: 28, 관리쿠폰명: "가을 선착순 쿠폰", 사용건수: '98회', 쿠폰할인금액: '100원', 쿠폰취소금액:'0원', 지원금액: '500원', 정산금액: '900원', 정산완료일:'2023.11.03'},
         { 쿠폰적용일: "2023.10.18", 쿠폰번호: 27, 관리쿠폰명: "가을 선착순 쿠폰", 사용건수: '97회', 쿠폰할인금액: '150원', 쿠폰취소금액:'0원', 지원금액: '500원', 정산금액: '850원', 정산완료일:'2023.11.04'},
         { 쿠폰적용일: "2023.10.17", 쿠폰번호: 26, 관리쿠폰명: "가을 선착순 쿠폰", 사용건수: '96회', 쿠폰할인금액: '200원', 쿠폰취소금액:'0원', 지원금액: '500원', 정산금액: '1500원', 정산완료일:'2023.11.05'},
@@ -33,11 +33,39 @@ function ExcelDownloadButton() {
     ];
 
     const itemsPerPage = 8;
-    const [currentPage, setCurrentPage] = useState(0); 
-
+    const [currentPage, setCurrentPage] = useState(0);
     const [sortBy, setSortBy] = useState('쿠폰적용일');
-
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [selectedData, setSelectedData] = useState<DataItem[]>([]);
+    const [selectedStartMonth, setSelectedStartMonth] = useState<Date | null>(null);
+    const [selectedEndMonth, setSelectedEndMonth] = useState<Date | null>(null);
+
+    useEffect(() => {
+      fetchDataForRange();
+    }, [selectedStartMonth, selectedEndMonth]);
+
+    const fetchDataForRange = () => {
+        // 선택된 범위 내의 데이터 필터링
+        const filteredData = totalData.filter(item => {
+          if (selectedStartMonth && selectedEndMonth) {
+            const couponDate = new Date(item.쿠폰적용일);
+            const startMonthYear = selectedStartMonth.getFullYear();
+            const startMonthIndex = selectedStartMonth.getMonth();
+            const endMonthYear = selectedEndMonth.getFullYear();
+            const endMonthIndex = selectedEndMonth.getMonth();
+            const dataMonthYear = couponDate.getFullYear();
+            const dataMonthIndex = couponDate.getMonth();
+  
+            return (
+              (dataMonthYear > startMonthYear || (dataMonthYear === startMonthYear && dataMonthIndex >= startMonthIndex)) &&
+              (dataMonthYear < endMonthYear || (dataMonthYear === endMonthYear && dataMonthIndex <= endMonthIndex))
+            );
+          }
+          return true;
+        });
+  
+        setSelectedData(filteredData);
+      };
 
     const toggleDropdown = () => {
         setDropdownOpen(!dropdownOpen);
@@ -64,8 +92,6 @@ function ExcelDownloadButton() {
     const offset = currentPage * itemsPerPage;
     const currentData = sortedData.slice(offset, offset + itemsPerPage);
 
-    const [selectedData, setSelectedData] = useState<DataItem[]>([]);
-
     const handleDownload = () => {
         const worksheet = XLSX.utils.json_to_sheet(currentData);
         const workbook = XLSX.utils.book_new();
@@ -89,18 +115,26 @@ function ExcelDownloadButton() {
           <TableComponent data={selectedData} />
           <button onClick={handleDownload}>현재 페이지 엑셀 다운로드</button>
           <button onClick={handleDownloadAll}>전체 데이터 엑셀 다운로드</button>
-          <DateRangePicker selectedData={totalData} setSelectedData={setSelectedData} /> 
-           <div className={`dropdown ${dropdownOpen ? 'open' : ''}`}>
-                <button onClick={toggleDropdown} className="dropbtn">
-                    정렬 옵션 선택
-                </button>
-                <div className="dropdown-content">
-                    <button onClick={() => handleSortBy('쿠폰적용일 순')}>쿠폰적용일 순</button>
-                    <button onClick={() => handleSortBy('정산금액 순')}>정산금액 순</button>
-                    <button onClick={() => handleSortBy('정산완료일 순')}>정산완료일 순</button>
-                    <button onClick={() => handleSortBy('사용건수 순')}>사용건수 순</button>
-                </div>
+          <DateRangePicker
+            selectedData={totalData}
+            setSelectedData={setSelectedData}
+            selectedStartMonth={selectedStartMonth}
+            setSelectedStartMonth={setSelectedStartMonth}
+            selectedEndMonth={selectedEndMonth}
+            setSelectedEndMonth={setSelectedEndMonth}
+          />
+
+<div className={`dropdown ${dropdownOpen ? 'open' : ''}`}>
+            <button onClick={toggleDropdown} className="dropbtn">
+              정렬 옵션 선택
+            </button>
+            <div className="dropdown-content">
+              <button onClick={() => handleSortBy('쿠폰적용일 순')}>쿠폰적용일 순</button>
+              <button onClick={() => handleSortBy('정산금액 순')}>정산금액 순</button>
+              <button onClick={() => handleSortBy('정산완료일 순')}>정산완료일 순</button>
+              <button onClick={() => handleSortBy('사용건수 순')}>사용건수 순</button>
             </div>
+          </div>
 
           <ReactPaginate 
             className="pagination" 
@@ -108,7 +142,7 @@ function ExcelDownloadButton() {
             nextLabel={'>'}
             breakLabel={'...'}
             breakClassName={'hidden'}
-            pageCount={Math.ceil(totalData.length / itemsPerPage)}
+            pageCount={Math.ceil(selectedData.length / itemsPerPage)}
             marginPagesDisplayed={2}
             pageRangeDisplayed={5}
             onPageChange={handlePageClick}
