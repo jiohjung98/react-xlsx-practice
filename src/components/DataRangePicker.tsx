@@ -5,18 +5,17 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { DataItem } from '../types/DataItem';
 
 interface DateRangePickerProps {
-  selectedData: DataItem[];
-  setSelectedData: React.Dispatch<React.SetStateAction<DataItem[]>>;
-  selectedStartMonth: Date | null;
-  setSelectedStartMonth: React.Dispatch<React.SetStateAction<Date | null>>;
-  selectedEndMonth: Date | null;
-  setSelectedEndMonth: React.Dispatch<React.SetStateAction<Date | null>>;
+  totalData: DataItem[];
+  setSelectedData: (data: DataItem[]) => void;
 }
 
-const DateRangePicker: React.FC<DateRangePickerProps> = ({ selectedData, setSelectedData, selectedStartMonth, setSelectedStartMonth, selectedEndMonth, setSelectedEndMonth }) => {
+const DateRangePicker: React.FC<DateRangePickerProps> = ({ totalData, setSelectedData }) => {
+  const [selectedStartMonth, setSelectedStartMonth] = useState<Date | null>(null);
+  const [selectedEndMonth, setSelectedEndMonth] = useState<Date | null>(null);
+
   const fetchDataForRange = () => {
     // 선택된 범위 내의 데이터 필터링
-    const filteredData = selectedData.filter(item => {
+    const filteredData = totalData.filter(item => {
       if (selectedStartMonth && selectedEndMonth) {
         const couponDate = new Date(item.쿠폰적용일);
         const startMonthYear = selectedStartMonth.getFullYear();
@@ -37,16 +36,16 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ selectedData, setSele
     setSelectedData(filteredData);
   };
 
+  const handleRangeSelection = () => {
+    fetchDataForRange();
+  };
+
   const handleStartMonthChange = (date: Date | null) => {
     setSelectedStartMonth(date);
   };
 
   const handleEndMonthChange = (date: Date | null) => {
     setSelectedEndMonth(date);
-  };
-
-  const handleRangeSelection = () => {
-    fetchDataForRange();
   };
 
   return (
@@ -56,21 +55,19 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ selectedData, setSele
         onChange={handleStartMonthChange}
         dateFormat="yyyy/MM"
         showMonthYearPicker
-        placeholderText="시작 달을 선택하세요"
+        placeholderText="조회를 시작할 달을 선택하세요"
       />
-
       <DatePicker
         selected={selectedEndMonth}
         onChange={handleEndMonthChange}
         dateFormat="yyyy/MM"
         showMonthYearPicker
-        placeholderText="마감 달을 선택하세요"
+        placeholderText="조회를 끝낼 달을 선택하세요"
       />
 
       <button onClick={handleRangeSelection}>기간 선택</button>
     </div>
   );
 };
-
 
 export default DateRangePicker;

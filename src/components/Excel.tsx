@@ -37,8 +37,8 @@ function ExcelDownloadButton() {
     const [sortBy, setSortBy] = useState('쿠폰적용일');
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [selectedData, setSelectedData] = useState<DataItem[]>([]);
-    const [selectedStartMonth, setSelectedStartMonth] = useState<Date | null>(null);
-    const [selectedEndMonth, setSelectedEndMonth] = useState<Date | null>(null);
+    const [selectedStartMonth] = useState<Date | null>(null);
+    const [selectedEndMonth] = useState<Date | null>(null);
 
     useEffect(() => {
       fetchDataForRange();
@@ -78,6 +78,7 @@ function ExcelDownloadButton() {
 
     const sortedData = [...totalData].sort((a, b) => {
         if (sortBy === '쿠폰적용일 순') {
+            console.log(totalData);
             return new Date(a.쿠폰적용일).getTime() - new Date(b.쿠폰적용일).getTime();
         } else if (sortBy === '정산금액 순') {
             return parseInt(a.정산금액) - parseInt(b.정산금액);
@@ -115,16 +116,9 @@ function ExcelDownloadButton() {
           <TableComponent data={selectedData} />
           <button onClick={handleDownload}>현재 페이지 엑셀 다운로드</button>
           <button onClick={handleDownloadAll}>전체 데이터 엑셀 다운로드</button>
-          <DateRangePicker
-            selectedData={totalData}
-            setSelectedData={setSelectedData}
-            selectedStartMonth={selectedStartMonth}
-            setSelectedStartMonth={setSelectedStartMonth}
-            selectedEndMonth={selectedEndMonth}
-            setSelectedEndMonth={setSelectedEndMonth}
-          />
+          <DateRangePicker totalData={totalData} setSelectedData={setSelectedData} />
 
-<div className={`dropdown ${dropdownOpen ? 'open' : ''}`}>
+            <div className={`dropdown ${dropdownOpen ? 'open' : ''}`}>
             <button onClick={toggleDropdown} className="dropbtn">
               정렬 옵션 선택
             </button>
