@@ -41,13 +41,22 @@ function ExcelDownloadButton() {
     const [selectedEndMonth] = useState<Date | null>(null);
 
     useEffect(() => {
-      fetchDataForRange();
+        fetchDataForRange();
+        // 기간 선택 시 페이지 초기화
+        setCurrentPage(0);
     }, [selectedStartMonth, selectedEndMonth]);
 
-    const fetchDataForRange = () => {
-        // 선택된 범위 내의 데이터 필터링
-        const filteredData = totalData.filter(item => {
-          if (selectedStartMonth && selectedEndMonth) {
+    const [totalPages, setTotalPages] = useState(0);
+
+    useEffect(() => {
+        const pageCount = Math.ceil(selectedData.length / itemsPerPage);
+        setTotalPages(pageCount);
+    }, [selectedData]);
+
+const fetchDataForRange = () => {
+    const filteredData = totalData.filter(item => {
+        if (selectedStartMonth && selectedEndMonth) {
+            // 선택된 날짜 범위에 따라 데이터 필터링
             const couponDate = new Date(item.쿠폰적용일);
             const startMonthYear = selectedStartMonth.getFullYear();
             const startMonthIndex = selectedStartMonth.getMonth();
@@ -55,17 +64,17 @@ function ExcelDownloadButton() {
             const endMonthIndex = selectedEndMonth.getMonth();
             const dataMonthYear = couponDate.getFullYear();
             const dataMonthIndex = couponDate.getMonth();
-  
+
             return (
-              (dataMonthYear > startMonthYear || (dataMonthYear === startMonthYear && dataMonthIndex >= startMonthIndex)) &&
-              (dataMonthYear < endMonthYear || (dataMonthYear === endMonthYear && dataMonthIndex <= endMonthIndex))
+                (dataMonthYear > startMonthYear || (dataMonthYear === startMonthYear && dataMonthIndex >= startMonthIndex)) &&
+                (dataMonthYear < endMonthYear || (dataMonthYear === endMonthYear && dataMonthIndex <= endMonthIndex))
             );
-          }
-          return true;
-        });
-  
-        setSelectedData(filteredData);
-      };
+        }
+        return true;
+    });
+
+    setSelectedData(filteredData);
+};
 
     const toggleDropdown = () => {
         setDropdownOpen(!dropdownOpen);
@@ -91,7 +100,7 @@ function ExcelDownloadButton() {
     });
 
     const offset = currentPage * itemsPerPage;
-    const currentData = sortedData.slice(offset, offset + itemsPerPage);
+    const currentData = selectedData.slice(offset, offset + itemsPerPage);
 
     const handleDownload = () => {
         const worksheet = XLSX.utils.json_to_sheet(currentData);
@@ -113,7 +122,7 @@ function ExcelDownloadButton() {
 
     return (
         <div>
-          <TableComponent data={selectedData} />
+          <TableComponent data={currentData} />
           <button onClick={handleDownload}>현재 페이지 엑셀 다운로드</button>
           <button onClick={handleDownloadAll}>전체 데이터 엑셀 다운로드</button>
           <DateRangePicker totalData={totalData} setSelectedData={setSelectedData} />
@@ -136,7 +145,7 @@ function ExcelDownloadButton() {
             nextLabel={'>'}
             breakLabel={'...'}
             breakClassName={'hidden'}
-            pageCount={Math.ceil(selectedData.length / itemsPerPage)}
+            pageCount={totalPages} 
             marginPagesDisplayed={2}
             pageRangeDisplayed={5}
             onPageChange={handlePageClick}
